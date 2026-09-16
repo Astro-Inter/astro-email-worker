@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { connectRedis } from "./config/redis.js";
 import { connectDatabase } from "./config/database.js";
+import { processEmailQueue } from "./workers/emailQueueWorker.js";
 
 async function start() {
     try {
@@ -10,9 +11,11 @@ async function start() {
         await connectRedis();
         await connectDatabase();
 
-        console.log("Worker iniciado com sucesso");
+        await processEmailQueue();
+
+        console.log("Worker finalizado com sucesso");
     } catch (error) {
-        console.error("Erro ao iniciar worker:", error);
+        console.error("Erro ao executar worker:", error);
         process.exit(1);
     }
 }
