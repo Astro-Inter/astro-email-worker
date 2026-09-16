@@ -1,5 +1,6 @@
 import { redisClient } from "../config/redis.js";
 import { getEmployeeById } from "../services/userService.js";
+import { createAccessToken } from "../services/tokenService.js";
 
 const QUEUE_KEY = process.env.REDIS_QUEUE_KEY;
 
@@ -19,14 +20,8 @@ export async function processEmailQueue() {
             if (!employee) {
                 continue;
             }
-            console.log("Funcionário encontrado:", {
-                id: employee.id_usuario,
-                nome: employee.nome,
-                email: employee.email,
-                workspace: employee.workspace,
-                unidade: employee.unidade,
-                cargo: employee.cargo
-            });
+            const token = await createAccessToken(employee.id_usuario);
+            console.log(`Token criado para funcionário ${employee.id_usuario}`);
         }
     } catch (error) {
         console.error("Erro ao processar fila:", error);
