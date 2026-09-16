@@ -1,0 +1,32 @@
+{
+  "name": "astro-email-worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Astro-Inter/astro-email-worker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Astro-Inter/astro-email-worker/issues"
+  },
+  "homepage": "https://github.com/Astro-Inter/astro-email-worker#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "pg": "^8.23.0",
+    "redis": "^6.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.3",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
