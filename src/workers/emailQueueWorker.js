@@ -1,6 +1,7 @@
 import { redisClient } from "../config/redis.js";
 import { getEmployeeById } from "../services/userService.js";
 import { createAccessToken } from "../services/tokenService.js";
+import { sendAccessEmail } from "../services/emailService.js";
 
 const QUEUE_KEY = process.env.REDIS_QUEUE_KEY;
 
@@ -20,8 +21,18 @@ export async function processEmailQueue() {
             if (!employee) {
                 continue;
             }
-            const token = await createAccessToken(employee.id_usuario);
-            console.log(`Token criado para funcionário ${employee.id_usuario}`);
+            try {
+                const token = await createAccessToken(employee.id_usuario);
+
+                await sendAccessEmail(employee, token);
+
+                console.log(`E-mail enviado para ${employee.email}`);
+            } catch (error) {
+                console.error(
+                    `Erro ao enviar e-mail para funcionário ${employee.id_usuario}:`,
+                    error
+                );
+            }
         }
     } catch (error) {
         console.error("Erro ao processar fila:", error);

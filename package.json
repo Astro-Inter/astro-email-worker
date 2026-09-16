@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Astro-Inter/astro-email-worker#readme",
   "dependencies": {
     "dotenv": "^17.4.2",
+    "nodemailer": "^10.0.10",
     "pg": "^8.23.0",
     "redis": "^6.2.1"
   },
