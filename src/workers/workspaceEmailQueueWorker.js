@@ -1,5 +1,5 @@
 import { redisClient } from "../config/redis.js";
-import { createWorkspaceAccessToken, getWorkspaceTokenConfig } from "../services/workspaceTokenService.js";
+import { createWorkspaceAccessToken, getWorkspaceTokenPrefix } from "../services/workspaceTokenService.js";
 import { sendWorkspaceAccessEmail } from "../services/emailService.js";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -11,7 +11,7 @@ export async function processWorkspaceEmailQueue() {
         throw new Error("WORKSPACE_EMAIL_QUEUE_KEY não configurada.");
     }
 
-    getWorkspaceTokenConfig();
+    getWorkspaceTokenPrefix();
 
     console.log("Iniciando processamento da fila de acesso ao workspace...");
 
