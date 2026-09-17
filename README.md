@@ -13,9 +13,8 @@ Configure as variáveis em `.env` (consulte `.env.example`):
 | --- | --- |
 | `WORKSPACE_EMAIL_QUEUE_KEY` | Lista Redis que contém apenas e-mails, por exemplo `astro:workspace:email:queue`. |
 | `WORKSPACE_ACCESS_TOKEN_PREFIX` | Prefixo da chave do código, por exemplo `astro:workspace:access:token:`. |
-| `WORKSPACE_ACCESS_TOKEN_TTL_SECONDS` | Prazo de validade do código, em segundos. |
 
-O worker usa `LPOP` na fila. O e-mail é normalizado com `trim()` e letras minúsculas antes de compor a chave `<WORKSPACE_ACCESS_TOKEN_PREFIX><email>`. O valor é o código de seis dígitos, com TTL. Um novo pedido para o mesmo e-mail substitui o código anterior.
+O worker usa `LPOP` na fila. O e-mail é normalizado com `trim()` e letras minúsculas antes de compor a chave `<WORKSPACE_ACCESS_TOKEN_PREFIX><email>`. O valor é o código de seis dígitos, sem expiração automática. Um novo pedido para o mesmo e-mail substitui o código anterior.
 
 O aplicativo principal deve consultar essa mesma chave para validar o código e concluir a criação do workspace. Este worker apenas gera e envia o código. Após o uso, o aplicativo deve remover a chave para impedir reutilização.
 
@@ -23,7 +22,7 @@ Se o envio falhar, o e-mail volta para o final da fila e o processo termina com 
 
 ## Teste manual do fluxo de workspace
 
-1. Preencha `REDIS_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` e `SMTP_FROM` no `.env`. Configure também as três variáveis de workspace acima.
+1. Preencha `REDIS_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` e `SMTP_FROM` no `.env`. Configure também as duas variáveis de workspace acima.
 2. Em PowerShell, adicione um endereço que você controla à fila (substitua `teste@exemplo.com`):
 
    ```powershell
@@ -31,13 +30,13 @@ Se o envio falhar, o e-mail volta para o final da fila e o processo termina com 
    ```
 
 3. Execute `npm run start:workspace`. Confira no log que o e-mail foi enviado e verifique a caixa de entrada.
-4. Consulte o código e o tempo restante no Redis com o mesmo e-mail, em minúsculas:
+4. Consulte o código no Redis com o mesmo e-mail, em minúsculas:
 
    ```powershell
-   node --input-type=module -e "import 'dotenv/config'; import { createClient } from 'redis'; const client = createClient({ url: process.env.REDIS_URL }); await client.connect(); const key = process.env.WORKSPACE_ACCESS_TOKEN_PREFIX + 'teste@exemplo.com'; console.log('Token:', await client.get(key), 'TTL:', await client.ttl(key)); await client.quit();"
+   node --input-type=module -e "import 'dotenv/config'; import { createClient } from 'redis'; const client = createClient({ url: process.env.REDIS_URL }); await client.connect(); const key = process.env.WORKSPACE_ACCESS_TOKEN_PREFIX + 'teste@exemplo.com'; console.log('Token:', await client.get(key)); await client.quit();"
    ```
 
-O token no Redis deve coincidir com o código recebido no e-mail. Para testar uma falha de SMTP, use uma configuração de servidor inválida em um ambiente de teste: o processo deve sair com erro e o e-mail deve permanecer na fila.
+O token no Redis deve coincidir com o código recebido no e-mail. A chave não expira sozinha; o aplicativo principal deve removê-la após o uso. Para testar uma falha de SMTP, use uma configuração de servidor inválida em um ambiente de teste: o processo deve sair com erro e o e-mail deve permanecer na fila.
 
 ## Execução automática no GitHub Actions
 
@@ -48,7 +47,7 @@ Configure em **Settings → Secrets and variables → Actions**:
 | Tipo | Nomes |
 | --- | --- |
 | Secrets | `REDIS_URL`, `DATABASE_URL`, `SMTP_USER`, `SMTP_PASSWORD` |
-| Variables | `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `REDIS_QUEUE_KEY`, `ACCESS_TOKEN_PREFIX`, `ACCESS_TOKEN_TTL_SECONDS`, `WORKSPACE_EMAIL_QUEUE_KEY`, `WORKSPACE_ACCESS_TOKEN_PREFIX`, `WORKSPACE_ACCESS_TOKEN_TTL_SECONDS` |
+| Variables | `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `REDIS_QUEUE_KEY`, `ACCESS_TOKEN_PREFIX`, `ACCESS_TOKEN_TTL_SECONDS`, `WORKSPACE_EMAIL_QUEUE_KEY`, `WORKSPACE_ACCESS_TOKEN_PREFIX` |
 
 Use nas Variables os mesmos nomes de fila e prefixos usados pelo sistema que adiciona os itens e valida os tokens. O `.env` local não é enviado ao runner do GitHub. Redis, PostgreSQL e SMTP precisam aceitar conexões do runner; se estiverem em uma rede privada, será necessário um runner com acesso a essa rede.
 

@@ -38,20 +38,21 @@ export function createWorkspaceAccessEmail(email, token) {
                             <p style="margin:0 0 12px;color:#8f00c4;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">ACESSO AO WORKSPACE</p>
                             <h1 style="margin:0 0 20px;color:#1c1839;font-size:30px;line-height:1.2;font-weight:700;">Seu primeiro passo no Astro.</h1>
                             <p style="margin:0 0 12px;font-size:16px;line-height:1.6;">Olá!</p>
-                            <p style="margin:0 0 28px;font-size:16px;line-height:1.6;">Recebemos uma solicitação de acesso para <strong>${safeEmail}</strong>. Use o código abaixo para continuar a criação do workspace da sua empresa.</p>
+                            <p style="margin:0 0 12px;font-size:16px;line-height:1.6;">Você comprou uma chave de workspace para a sua empresa. Use o código abaixo para ativá-la e continuar a criação do seu workspace no Astro.</p>
+                            <p style="margin:0 0 28px;font-size:14px;line-height:1.6;">E-mail: <strong>${safeEmail}</strong></p>
 
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f5eafa;border:1px solid #ead6f4;border-radius:12px;">
                                 <tr>
                                     <td align="center" style="padding:24px 16px;">
-                                        <p style="margin:0 0 10px;color:#5d426b;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SEU CÓDIGO DE ACESSO</p>
+                                        <p style="margin:0 0 10px;color:#5d426b;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Chave do workspace</p>
                                         <p style="margin:0;color:#1c1839;font-size:36px;font-weight:700;letter-spacing:8px;line-height:1.2;">${safeToken}</p>
                                     </td>
                                 </tr>
                             </table>
 
                             <h2 style="margin:32px 0 16px;color:#1c1839;font-size:20px;line-height:1.3;">Como continuar</h2>
-                            <p style="margin:0 0 10px;font-size:15px;line-height:1.6;"><strong style="color:#8f00c4;">01.</strong> Copie ou anote o código de acesso acima.</p>
-                            <p style="margin:0 0 10px;font-size:15px;line-height:1.6;"><strong style="color:#8f00c4;">02.</strong> Volte para a página de criação do workspace aberta no seu navegador e informe o código.</p>
+                            <p style="margin:0 0 10px;font-size:15px;line-height:1.6;"><strong style="color:#8f00c4;">01.</strong> Acesse a página de criação de workpace no site do Astro</p>
+                            <p style="margin:0 0 10px;font-size:15px;line-height:1.6;"><strong style="color:#8f00c4;">02.</strong> Informe o código para validar sua licença para criar um workspace.</p>
                             <p style="margin:0;font-size:15px;line-height:1.6;"><strong style="color:#8f00c4;">03.</strong> Continue o fluxo de criação e configuração do workspace da sua empresa.</p>
                         </td>
                     </tr>
@@ -71,12 +72,13 @@ export function createWorkspaceAccessEmail(email, token) {
 
     const text = `Olá!
 
-Recebemos uma solicitação de acesso para ${email}.
-Seu código de acesso ao workspace Astro é: ${token}
+Você comprou uma chave de workspace para a sua empresa. Use o código abaixo para ativá-la e continuar a criação do seu workspace no Astro.
+E-mail: ${email}
+Chave do workspace: ${token}
 
 Como continuar:
-1. Copie ou anote o código de acesso.
-2. Volte para a página de criação do workspace aberta no seu navegador e informe o código.
+1. Acesse a página de criação de workpace no site do Astro
+2. Informe o código para validar sua licença para criar um workspace.
 3. Continue o fluxo de criação e configuração do workspace da sua empresa.
 
 Este código é pessoal. Não compartilhe com outras pessoas.
