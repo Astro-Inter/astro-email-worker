@@ -38,3 +38,18 @@ Se o envio falhar, o e-mail volta para o final da fila e o processo termina com 
    ```
 
 O token no Redis deve coincidir com o código recebido no e-mail. Para testar uma falha de SMTP, use uma configuração de servidor inválida em um ambiente de teste: o processo deve sair com erro e o e-mail deve permanecer na fila.
+
+## Execução automática no GitHub Actions
+
+O workflow [email-workers.yml](.github/workflows/email-workers.yml) executa as duas filas a cada cinco minutos, nos minutos 3, 8, 13 e assim por diante. Também pode ser iniciado manualmente em **Actions → Processar filas de e-mail → Run workflow**. As workers são executadas no mesmo job, uma após a outra, e a fila de workspace ainda é processada se a worker de funcionários falhar. O workflow impede execuções simultâneas. O agendamento só funciona quando o arquivo estiver na branch padrão do repositório.
+
+Configure em **Settings → Secrets and variables → Actions**:
+
+| Tipo | Nomes |
+| --- | --- |
+| Secrets | `REDIS_URL`, `DATABASE_URL`, `SMTP_USER`, `SMTP_PASSWORD` |
+| Variables | `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `REDIS_QUEUE_KEY`, `ACCESS_TOKEN_PREFIX`, `ACCESS_TOKEN_TTL_SECONDS`, `WORKSPACE_EMAIL_QUEUE_KEY`, `WORKSPACE_ACCESS_TOKEN_PREFIX`, `WORKSPACE_ACCESS_TOKEN_TTL_SECONDS` |
+
+Use nas Variables os mesmos nomes de fila e prefixos usados pelo sistema que adiciona os itens e valida os tokens. O `.env` local não é enviado ao runner do GitHub. Redis, PostgreSQL e SMTP precisam aceitar conexões do runner; se estiverem em uma rede privada, será necessário um runner com acesso a essa rede.
+
+O GitHub Actions aceita agendamento com intervalo mínimo de cinco minutos e pode atrasar ou descartar uma execução em períodos de carga. Este cron prevê 288 execuções por dia. Para processar a cada minuto com regularidade, use um serviço contínuo ou outro agendador. Em repositórios privados, verifique a franquia de minutos da organização antes de manter este workflow ativo continuamente. Em repositórios públicos, o GitHub desativa workflows agendados após 60 dias sem atividade.

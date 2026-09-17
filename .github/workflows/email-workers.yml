@@ -1,0 +1,60 @@
+name: Processar filas de e-mail
+
+on:
+  schedule:
+    - cron: "3/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: astro-email-workers
+  cancel-in-progress: false
+
+jobs:
+  process-email-queues:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SMTP_HOST: ${{ vars.SMTP_HOST }}
+      SMTP_PORT: ${{ vars.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      SMTP_FROM: ${{ vars.SMTP_FROM }}
+      REDIS_QUEUE_KEY: ${{ vars.REDIS_QUEUE_KEY }}
+      ACCESS_TOKEN_PREFIX: ${{ vars.ACCESS_TOKEN_PREFIX }}
+      ACCESS_TOKEN_TTL_SECONDS: ${{ vars.ACCESS_TOKEN_TTL_SECONDS }}
+      WORKSPACE_EMAIL_QUEUE_KEY: ${{ vars.WORKSPACE_EMAIL_QUEUE_KEY }}
+      WORKSPACE_ACCESS_TOKEN_PREFIX: ${{ vars.WORKSPACE_ACCESS_TOKEN_PREFIX }}
+      WORKSPACE_ACCESS_TOKEN_TTL_SECONDS: ${{ vars.WORKSPACE_ACCESS_TOKEN_TTL_SECONDS }}
+    steps:
+      - name: Validar configuração
+        shell: bash
+        run: |
+          for name in REDIS_URL DATABASE_URL SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASSWORD SMTP_FROM REDIS_QUEUE_KEY ACCESS_TOKEN_PREFIX ACCESS_TOKEN_TTL_SECONDS WORKSPACE_EMAIL_QUEUE_KEY WORKSPACE_ACCESS_TOKEN_PREFIX WORKSPACE_ACCESS_TOKEN_TTL_SECONDS; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Configure $name nos Secrets ou Variables do repositório."
+              exit 1
+            fi
+          done
+
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci --omit=dev
+
+      - name: Processar fila de funcionários
+        id: employees
+        run: npm start
+
+      - name: Processar fila de workspace
+        if: ${{ !cancelled() && (steps.employees.outcome == 'success' || steps.employees.outcome == 'failure') }}
+        run: npm run start:workspace
