@@ -51,10 +51,21 @@ jobs:
       - name: Instalar dependências
         run: npm ci --omit=dev
 
-      - name: Processar fila de funcionários
-        id: employees
-        run: npm start
+      - name: Processar as duas filas
+        shell: bash
+        run: |
+          set +e
+          npm start &
+          employees_pid=$!
+          npm run start:workspace &
+          workspace_pid=$!
 
-      - name: Processar fila de workspace
-        if: ${{ !cancelled() && (steps.employees.outcome == 'success' || steps.employees.outcome == 'failure') }}
-        run: npm run start:workspace
+          wait "$employees_pid"
+          employees_status=$?
+          wait "$workspace_pid"
+          workspace_status=$?
+
+          if [ "$employees_status" -ne 0 ] || [ "$workspace_status" -ne 0 ]; then
+            echo "::error::Falha em uma ou nas duas workers."
+            exit 1
+          fi
