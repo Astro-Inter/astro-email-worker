@@ -1,22 +1,32 @@
 import { findUserById } from "../repositories/userRepository.js";
+import { createLogger } from "../observability/logger.js";
+
+const logger = createLogger({ component: "user-service" });
 
 export async function getEmployeeById(userId, findUser = findUserById) {
     const user = await findUser(userId);
 
     if (!user) {
-        console.warn(`Usuário ${userId} não encontrado.`);
+        logger.warn("Usuário da fila não encontrado", {
+            operation: "find-employee",
+            status: "not-found"
+        });
         return null;
     }
 
     if (user.tipo !== "COLABORADOR") {
-        console.warn(`Usuário ${userId} não é um funcionário.`);
+        logger.warn("Usuário da fila não é colaborador", {
+            operation: "validate-employee",
+            status: "ignored"
+        });
         return null;
     }
 
     if (user.status !== "PRE_CADASTRADO") {
-        console.warn(
-            `Funcionário ${userId} não está com status PRE_CADASTRADO.`
-        );
+        logger.warn("Colaborador da fila não está pré-cadastrado", {
+            operation: "validate-employee",
+            status: "ignored"
+        });
 
         return null;
     }

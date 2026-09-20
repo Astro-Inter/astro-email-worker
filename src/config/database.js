@@ -1,6 +1,8 @@
 import pg from "pg";
+import { createLogger } from "../observability/logger.js";
 
 const { Pool } = pg;
+const logger = createLogger({ component: "postgresql" });
 
 export const database = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -12,7 +14,10 @@ export const database = new Pool({
 export async function connectDatabase() {
     const client = await database.connect();
 
-    console.log("PostgreSQL conectado");
+    logger.info("PostgreSQL conectado", {
+        operation: "connect",
+        status: "success"
+    });
 
     client.release();
 }

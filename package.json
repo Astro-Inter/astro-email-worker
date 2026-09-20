@@ -21,6 +21,11 @@
   },
   "homepage": "https://github.com/Astro-Inter/astro-email-worker#readme",
   "dependencies": {
+    "@opentelemetry/api-logs": "^0.222.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.222.0",
+    "@opentelemetry/resources": "^2.11.0",
+    "@opentelemetry/sdk-logs": "^0.222.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
     "dotenv": "^17.4.2",
     "nodemailer": "^10.0.10",
     "pg": "^8.23.0",
