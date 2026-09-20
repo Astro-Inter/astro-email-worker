@@ -29,6 +29,8 @@ jobs:
       ACCESS_TOKEN_TTL_SECONDS: ${{ vars.ACCESS_TOKEN_TTL_SECONDS }}
       WORKSPACE_EMAIL_QUEUE_KEY: ${{ vars.WORKSPACE_EMAIL_QUEUE_KEY }}
       WORKSPACE_ACCESS_TOKEN_PREFIX: ${{ vars.WORKSPACE_ACCESS_TOKEN_PREFIX }}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.GRAFANA_OTLP_ENDPOINT }}
+      OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.GRAFANA_OTLP_HEADERS }}
     steps:
       - name: Validar configuração
         shell: bash

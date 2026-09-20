@@ -3,19 +3,25 @@ import "dotenv/config";
 import { redisClient, connectRedis } from "./config/redis.js";
 import { database, connectDatabase } from "./config/database.js";
 import { processEmailQueue } from "./workers/emailQueueWorker.js";
+import { createLogger, shutdownObservability } from "./observability/logger.js";
+
+const logger = createLogger({
+    "worker.name": "employee-email-queue",
+    "job.name": "process-email-queue"
+});
 
 async function start() {
     try {
-        console.log("Iniciando Astro Email Worker...");
+        logger.info("Iniciando Astro Email Worker", { status: "starting" });
 
         await connectRedis();
         await connectDatabase();
 
         await processEmailQueue();
 
-        console.log("Worker finalizado com sucesso");
+        logger.info("Worker finalizado com sucesso", { status: "success" });
     } catch (error) {
-        console.error("Erro ao executar worker:", error);
+        logger.error("Erro ao executar worker", { status: "error", error });
         process.exitCode = 1;
     } finally {
         const results = await Promise.allSettled([
@@ -25,9 +31,24 @@ async function start() {
 
         for (const result of results) {
             if (result.status === "rejected") {
-                console.error("Erro ao fechar conexão do worker:", result.reason);
+                logger.error("Erro ao fechar conexão do worker", {
+                    operation: "close-connections",
+                    status: "error",
+                    error: result.reason
+                });
                 process.exitCode = 1;
             }
+        }
+
+        try {
+            await shutdownObservability();
+        } catch (error) {
+            logger.error("Erro ao finalizar exportação de observabilidade", {
+                operation: "shutdown-observability",
+                status: "error",
+                error
+            });
+            process.exitCode = 1;
         }
     }
 }

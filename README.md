@@ -5,6 +5,23 @@ O projeto possui dois processos independentes:
 - `npm start`: consome IDs de funcionários da fila original, consulta o PostgreSQL e envia o e-mail de primeiro acesso.
 - `npm run start:workspace`: consome endereços de e-mail de outra fila, cria um código de seis dígitos no Redis e envia o e-mail para iniciar a criação de um workspace. Este processo não acessa o PostgreSQL.
 
+## Observabilidade
+
+O projeto emite logs estruturados em JSON no console e utiliza OpenTelemetry para enviá-los ao Grafana Cloud pelo protocolo OTLP/HTTP. O identificador do serviço é `service.name=astro-email-worker`; os registros também incluem versão, ambiente, worker, job, operação, duração e status quando aplicáveis.
+
+A exportação remota é opcional. Sem as duas variáveis abaixo, o worker continua funcionando e registra somente no console:
+
+| Variável | Finalidade |
+| --- | --- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Endpoint OTLP base fornecido pelo Grafana Cloud. O exporter acrescenta `/v1/logs`. |
+| `OTEL_EXPORTER_OTLP_HEADERS` | Header de autenticação OTLP, no formato `Authorization=Basic%20<credencial>`. |
+
+Nunca grave esses valores no código ou em arquivos versionados. Para uso local, copie `.env.example` para `.env` e preencha as variáveis apenas se quiser testar a exportação. O arquivo `.env` permanece ignorado pelo Git.
+
+No GitHub, crie os secrets `GRAFANA_OTLP_ENDPOINT` e `GRAFANA_OTLP_HEADERS` em **Settings → Secrets and variables → Actions**. O workflow os disponibiliza para os processos como `OTEL_EXPORTER_OTLP_ENDPOINT` e `OTEL_EXPORTER_OTLP_HEADERS` sem expor seus valores no YAML.
+
+Para validar localmente apenas o formato e o fallback de console, execute `npm test`. Para validar a integração completa, configure as duas variáveis OTLP, execute uma das workers e, no Grafana Cloud, abra **Drilldown → Logs** e procure pelo serviço `astro-email-worker`. Em **Explore**, a consulta LogQL equivalente é `{service_name="astro-email-worker"}`; o Loki normaliza o atributo OTel `service.name` para o label `service_name`. Os logs finais são descarregados antes de o processo encerrar.
+
 ## Configuração do acesso ao workspace
 
 Configure as variáveis em `.env` (consulte `.env.example`):
@@ -46,7 +63,7 @@ Configure em **Settings → Secrets and variables → Actions**:
 
 | Tipo | Nomes |
 | --- | --- |
-| Secrets | `REDIS_URL`, `DATABASE_URL`, `SMTP_USER`, `SMTP_PASSWORD` |
+| Secrets | `REDIS_URL`, `DATABASE_URL`, `SMTP_USER`, `SMTP_PASSWORD`, `GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_HEADERS` |
 | Variables | `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `REDIS_QUEUE_KEY`, `ACCESS_TOKEN_PREFIX`, `ACCESS_TOKEN_TTL_SECONDS`, `WORKSPACE_EMAIL_QUEUE_KEY`, `WORKSPACE_ACCESS_TOKEN_PREFIX` |
 
 Use nas Variables os mesmos nomes de fila e prefixos usados pelo sistema que adiciona os itens e valida os tokens. O `.env` local não é enviado ao runner do GitHub. Redis, PostgreSQL e SMTP precisam aceitar conexões do runner; se estiverem em uma rede privada, será necessário um runner com acesso a essa rede.
