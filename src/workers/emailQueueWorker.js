@@ -5,11 +5,16 @@ import { sendAccessEmail } from "../services/emailService.js";
 
 const QUEUE_KEY = process.env.REDIS_QUEUE_KEY;
 
-export async function processEmailQueue() {
+export async function processEmailQueue({
+    queueClient = redisClient,
+    findEmployee = getEmployeeById,
+    createToken = createAccessToken,
+    sendEmail = sendAccessEmail
+} = {}) {
     console.log("Iniciando processamento da fila...");
     try {
         while (true) {
-            const employeeId = await redisClient.lPop(QUEUE_KEY);
+            const employeeId = await queueClient.lPop(QUEUE_KEY);
 
             if (!employeeId) {
                 console.log("Fila vazia.");
@@ -17,14 +22,14 @@ export async function processEmailQueue() {
             }
 
             console.log(`Processando funcionário: ${employeeId}`);
-            const employee = await getEmployeeById(employeeId);
+            const employee = await findEmployee(employeeId);
             if (!employee) {
                 continue;
             }
             try {
-                const token = await createAccessToken(employee.id_usuario);
+                const token = await createToken(employee.id_usuario);
 
-                await sendAccessEmail(employee, token);
+                await sendEmail(employee, token);
 
                 console.log(`E-mail enviado para ${employee.email}`);
             } catch (error) {
