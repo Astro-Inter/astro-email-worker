@@ -1,10 +1,11 @@
 import { redisClient } from "../config/redis.js";
-import { getEmployeeById } from "../services/userService.js";
+import { getEmployeeByEmail } from "../services/userService.js";
 import { createAccessToken } from "../services/tokenService.js";
 import { sendAccessEmail } from "../services/emailService.js";
 import { createLogger } from "../observability/logger.js";
 
 const QUEUE_KEY = process.env.REDIS_QUEUE_KEY;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const logger = createLogger({
     "worker.name": "employee-email-queue",
     "job.name": "process-email-queue"
@@ -12,7 +13,7 @@ const logger = createLogger({
 
 export async function processEmailQueue({
     queueClient = redisClient,
-    findEmployee = getEmployeeById,
+    findEmployee = getEmployeeByEmail,
     createToken = createAccessToken,
     sendEmail = sendAccessEmail
 } = {}) {
@@ -20,9 +21,9 @@ export async function processEmailQueue({
     logger.info("Iniciando processamento da fila", { status: "started" });
     try {
         while (true) {
-            const employeeId = await queueClient.lPop(QUEUE_KEY);
+            const queuedEmail = await queueClient.lPop(QUEUE_KEY);
 
-            if (!employeeId) {
+            if (queuedEmail === null) {
                 logger.info("Fila vazia", {
                     operation: "dequeue",
                     status: "empty"
@@ -30,17 +31,27 @@ export async function processEmailQueue({
                 break;
             }
 
+            const email = queuedEmail.trim().toLowerCase();
+
+            if (!EMAIL_PATTERN.test(email)) {
+                logger.warn("E-mail inválido na fila de colaboradores", {
+                    operation: "validate-email",
+                    status: "discarded"
+                });
+                continue;
+            }
+
             const itemStartedAt = Date.now();
             logger.info("Processando item da fila de colaboradores", {
                 operation: "process-email",
                 status: "started"
             });
-            const employee = await findEmployee(employeeId);
+            const employee = await findEmployee(email);
             if (!employee) {
                 continue;
             }
             try {
-                const token = await createToken(employee.id_usuario);
+                const token = await createToken(email);
 
                 await sendEmail(employee, token);
 

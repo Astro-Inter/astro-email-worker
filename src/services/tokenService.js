@@ -11,18 +11,18 @@ export function generateAccessToken() {
     return crypto.randomInt(100000, 1000000).toString();
 }
 
-export async function saveAccessToken(userId, token) {
-    const key = `${TOKEN_PREFIX}${userId}`;
+export async function saveAccessToken(email, token) {
+    const key = `${TOKEN_PREFIX}${email}`;
 
     await redisClient.set(key, token, {
         EX: TOKEN_TTL
     });
 }
 
-export async function createAccessToken(userId) {
+export async function createAccessToken(email) {
     const token = generateAccessToken();
 
-    await saveAccessToken(userId, token);
+    await saveAccessToken(email, token);
 
     return token;
 }
