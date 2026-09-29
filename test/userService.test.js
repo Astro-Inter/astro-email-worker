@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { getEmployeeById } from "../src/services/userService.js";
+import { getEmployeeByEmail } from "../src/services/userService.js";
 
 const preRegisteredEmployee = {
     id_usuario: 42,
@@ -12,8 +12,8 @@ const preRegisteredEmployee = {
 };
 
 test("aceita colaborador pré-cadastrado", async () => {
-    const result = await getEmployeeById(
-        preRegisteredEmployee.id_usuario,
+    const result = await getEmployeeByEmail(
+        preRegisteredEmployee.email,
         async () => preRegisteredEmployee
     );
 
@@ -27,8 +27,8 @@ test("rejeita colaborador com outro status", async (context) => {
         status: "ATIVO"
     };
 
-    const result = await getEmployeeById(
-        activeEmployee.id_usuario,
+    const result = await getEmployeeByEmail(
+        activeEmployee.email,
         async () => activeEmployee
     );
 
@@ -43,8 +43,8 @@ for (const managerType of ["GESTOR", "GESTOR_WORKSPACE"]) {
             tipo: managerType
         };
 
-        const result = await getEmployeeById(
-            manager.id_usuario,
+        const result = await getEmployeeByEmail(
+            manager.email,
             async () => manager
         );
 
@@ -55,7 +55,7 @@ for (const managerType of ["GESTOR", "GESTOR_WORKSPACE"]) {
 test("rejeita usuário inexistente", async (context) => {
     context.mock.method(console, "warn", () => {});
 
-    const result = await getEmployeeById(999, async () => null);
+    const result = await getEmployeeByEmail("inexistente@example.com", async () => null);
 
     assert.equal(result, null);
 });

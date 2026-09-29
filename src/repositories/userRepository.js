@@ -1,6 +1,6 @@
 import { database } from "../config/database.js";
 
-export async function findUserById(userId) {
+export async function findUserByEmail(email) {
     const result = await database.query(
         `
         SELECT
@@ -30,9 +30,9 @@ export async function findUserById(userId) {
         LEFT JOIN cargo c
             ON c.id_cargo = u.cargo_id
 
-        WHERE u.id_usuario = $1
+        WHERE LOWER(u.email) = LOWER($1)
         `,
-        [userId]
+        [email]
     );
 
     return result.rows[0] ?? null;

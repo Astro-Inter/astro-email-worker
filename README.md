@@ -2,8 +2,14 @@
 
 O projeto possui dois processos independentes:
 
-- `npm start`: consome IDs de funcionários da fila original, consulta o PostgreSQL e envia o e-mail de primeiro acesso.
+- `npm start`: consome endereços de e-mail de funcionários da fila original, consulta o PostgreSQL e envia o e-mail de primeiro acesso.
 - `npm run start:workspace`: consome endereços de e-mail de outra fila, cria um código de seis dígitos no Redis e envia o e-mail para iniciar a criação de um workspace. Este processo não acessa o PostgreSQL.
+
+## Configuração do acesso do funcionário
+
+A lista definida por `REDIS_QUEUE_KEY` deve conter o e-mail de cada funcionário. O worker normaliza o valor com `trim()` e letras minúsculas, busca no PostgreSQL o colaborador pré-cadastrado correspondente e armazena o código em `<ACCESS_TOKEN_PREFIX><email>`. O código permanece no Redis pelo período definido em `ACCESS_TOKEN_TTL_SECONDS`.
+
+Um item inválido é registrado e descartado. O sistema que valida o primeiro acesso deve normalizar o e-mail da mesma forma antes de consultar a chave no Redis.
 
 ## Observabilidade
 

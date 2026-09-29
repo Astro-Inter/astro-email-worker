@@ -1,10 +1,10 @@
-import { findUserById } from "../repositories/userRepository.js";
+import { findUserByEmail } from "../repositories/userRepository.js";
 import { createLogger } from "../observability/logger.js";
 
 const logger = createLogger({ component: "user-service" });
 
-export async function getEmployeeById(userId, findUser = findUserById) {
-    const user = await findUser(userId);
+export async function getEmployeeByEmail(email, findUser = findUserByEmail) {
+    const user = await findUser(email);
 
     if (!user) {
         logger.warn("Usuário da fila não encontrado", {
