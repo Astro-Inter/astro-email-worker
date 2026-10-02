@@ -1,0 +1,6 @@
+{
+  "name": "astro-email-workers-free", "private": true, "type": "module",
+  "scripts": {"test": "node --test job.test.js grafana-logs.test.js", "deploy": "node assert-free.mjs && wrangler deploy"},
+  "dependencies": {"nodemailer":"10.0.10", "pg":"8.23.0", "redis":"6.2.1"},
+  "devDependencies": {"wrangler":"4.145.0"}
+}
