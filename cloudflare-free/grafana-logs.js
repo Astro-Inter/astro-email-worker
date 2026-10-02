@@ -1,0 +1,50 @@
+const severityNumber={INFO:9,WARN:13,ERROR:17};
+
+function otlpHeaders(raw) {
+  const headers=new Headers({'Content-Type':'application/json'});
+  for(const pair of raw.split(',')) {
+    const separator=pair.indexOf('=');
+    if(separator<1) continue;
+    const name=pair.slice(0,separator).trim();
+    const value=decodeURIComponent(pair.slice(separator+1).trim());
+    if(name) headers.set(name,value);
+  }
+  return headers;
+}
+
+export async function exportGrafanaLog(env,service,event,severity='INFO',attributes={}) {
+  if(!env.GRAFANA_OTLP_ENDPOINT||!env.GRAFANA_OTLP_HEADERS) return;
+  try {
+    const base=env.GRAFANA_OTLP_ENDPOINT.replace(/\/+$/u,'');
+    const endpoint=base.endsWith('/v1/logs')?base:`${base}/v1/logs`;
+    const logAttributes=[
+      ['event.name',event],
+      ...Object.entries(attributes).filter(([,value])=>value!==undefined),
+    ].map(([key,value])=>({
+      key,
+      value:typeof value==='string'?{stringValue:value}
+        :typeof value==='boolean'?{boolValue:value}:{intValue:String(value)},
+    }));
+    await fetch(endpoint,{
+      method:'POST',
+      headers:otlpHeaders(env.GRAFANA_OTLP_HEADERS),
+      signal:AbortSignal.timeout(5000),
+      body:JSON.stringify({resourceLogs:[{
+        resource:{attributes:[{key:'service.name',value:{stringValue:service}}]},
+        scopeLogs:[{scope:{name:'astro-cloudflare-logs',version:'1'},logRecords:[{
+          timeUnixNano:String(BigInt(Date.now())*1_000_000n),
+          severityNumber:severityNumber[severity]??severityNumber.INFO,
+          severityText:severity,
+          body:{stringValue:event},
+          attributes:logAttributes,
+        }]}],
+      }]}),
+    });
+  } catch {
+    // Telemetry is best-effort and cannot interrupt email queue processing.
+  }
+}
+
+export function queueGrafanaLog(ctx,env,service,event,severity='INFO',attributes={}) {
+  ctx?.waitUntil(exportGrafanaLog(env,service,event,severity,attributes));
+}

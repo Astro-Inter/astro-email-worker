@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "astro-email-worker",
+  "account_id": "25eb8d3849be3adbff3678f4ec781804",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "JOBS_ENABLED": "true",
+    "GRAFANA_OTLP_ENDPOINT": "https://otlp-gateway-prod-sa-east-1.grafana.net/otlp",
+    "MAX_ITEMS": "5",
+    "SMTP_HOST": "smtp.gmail.com",
+    "SMTP_PORT": "465",
+    "SMTP_FROM": "app.4str0@gmail.com",
+    "REDIS_QUEUE_KEY": "processamento:email:funcionario",
+    "ACCESS_TOKEN_PREFIX": "processamento:email:funcionario:access_key:",
+    "ACCESS_TOKEN_TTL_SECONDS": "604800",
+    "WORKSPACE_EMAIL_QUEUE_KEY": "processamento:email:workspace",
+    "WORKSPACE_ACCESS_TOKEN_PREFIX": "processamento:email:workspace:access_key:"
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "2004ed1dbe4a460495e663c42f3b801f"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "3-59/5 * * * *"
+    ]
+  }
+}
