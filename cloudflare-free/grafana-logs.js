@@ -12,7 +12,7 @@ function otlpHeaders(raw) {
   return headers;
 }
 
-export async function exportGrafanaLog(env,service,event,severity='INFO',attributes={}) {
+export async function exportGrafanaLog(env,service,event,severity='INFO',attributes={},fetcher=fetch) {
   if(!env.GRAFANA_OTLP_ENDPOINT||!env.GRAFANA_OTLP_HEADERS) return;
   try {
     const base=env.GRAFANA_OTLP_ENDPOINT.replace(/\/+$/u,'');
@@ -25,7 +25,7 @@ export async function exportGrafanaLog(env,service,event,severity='INFO',attribu
       value:typeof value==='string'?{stringValue:value}
         :typeof value==='boolean'?{boolValue:value}:{intValue:String(value)},
     }));
-    await fetch(endpoint,{
+    const response=await fetcher(endpoint,{
       method:'POST',
       headers:otlpHeaders(env.GRAFANA_OTLP_HEADERS),
       signal:AbortSignal.timeout(5000),
@@ -40,7 +40,10 @@ export async function exportGrafanaLog(env,service,event,severity='INFO',attribu
         }]}],
       }]}),
     });
-  } catch {
+    if(!response.ok) console.warn(`[grafana-otlp] export failed for ${service}: HTTP ${response.status}`);
+  } catch(error) {
+    const reason=error instanceof Error?error.name:'unknown error';
+    console.warn(`[grafana-otlp] export failed for ${service}: ${reason}`);
     // Telemetry is best-effort and cannot interrupt email queue processing.
   }
 }
