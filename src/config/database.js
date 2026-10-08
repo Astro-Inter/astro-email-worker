@@ -6,6 +6,9 @@ const logger = createLogger({ component: "postgresql" });
 
 export const database = new Pool({
     connectionString: process.env.DATABASE_URL,
+    max: 1,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 5000,
     ssl: {
         rejectUnauthorized: false
     }
