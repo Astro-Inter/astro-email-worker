@@ -106,3 +106,7 @@ try {
 ```
 
 Neste repositório, configure `GITHUB_WORKFLOW_REF=main`, a branch padrão atual. Execute a chamada após o `RPUSH`/`LPUSH` da fila de funcionários ou workspace retornar com sucesso. Se houver muitos itens em sequência, agrupe os disparos para evitar criar uma execução por item. A API inicia o workflow sob demanda, mas a preparação do runner ainda pode levar algum tempo; isso não oferece prazo fixo de entrega.
+
+## Diagnóstico operacional
+
+Consulte [os campos e limites dos novos diagnósticos](docs/observability-diagnostics.md) para investigar falhas por requisição ou execução no Grafana.
