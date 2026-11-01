@@ -1,5 +1,7 @@
 # Serviço de e-mails — Workers Free
 
+Cada disparo do cron `* * * * *` consulta as duas filas imediatamente e novamente 30 segundos depois. O intervalo é aproximado e acompanha o início real do disparo, sujeito a atrasos do agendador. A segunda consulta ocorre mesmo se a primeira falhar; a invocação registra erro se qualquer consulta falhar. A trava Redis existente impede processamento simultâneo quando uma consulta demora mais que o intervalo. O endpoint `/run` continua executando uma única consulta. Não é necessário criar um segundo cron nem contratar recursos pagos. As duas consultas compartilham os limites de CPU e de operações da mesma invocação do plano Free.
+
 Implementação nativa com os bancos Redis/PostgreSQL e SMTP existentes. Sem Containers ou bindings Cloudflare pagos. Não publicar em Workers Paid. Worker `astro-email-worker`, conta Astro `25eb8d3849be3adbff3678f4ec781804`.
 
 Ativado em 01/10/2026: `JOBS_ENABLED=true`, cron UTC `* * * * *` (a cada minuto). Workflow GitHub Actions `email-workers.yml` desativado na API, sem apagar seu arquivo remoto. CI continua ativo. Os testes `/validate` e `/run` passaram no Worker; as duas filas estavam vazias, portanto nenhum e-mail foi enviado. O primeiro disparo automático e um envio real ainda precisam de acompanhamento; a capacidade de CPU do plano Free sob carga não foi comprovada.
