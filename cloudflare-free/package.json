@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test job.test.js grafana-logs.test.js diagnostics.test.js",
+    "test": "node --test job.test.js grafana-logs.test.js diagnostics.test.js schedule.test.js",
     "deploy": "node assert-free.mjs && wrangler deploy"
   },
   "dependencies": {

@@ -1,3 +1,4 @@
+import {runScheduledPolls} from './schedule.js';
 import {diagnostic,observe} from './diagnostics.js';
 import pg from 'pg';
 import {createClient} from 'redis';
@@ -92,6 +93,7 @@ export default {
   },
   async scheduled(controller,env,ctx) {
     if(env.JOBS_ENABLED!=='true') return;
+    return runScheduledPolls(async () => {
     const runId=crypto.randomUUID(),started=Date.now();
     try {
       const result=await execute(env,false);
@@ -103,5 +105,6 @@ export default {
       queueGrafanaLog(ctx,env,'astro-email-worker','email_queue_failed','ERROR',attributes);
       throw new Error('Email queue job failed; inspect sanitized Worker logs.');
     }
+    });
   }
 };

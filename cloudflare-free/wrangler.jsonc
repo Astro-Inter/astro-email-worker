@@ -23,11 +23,11 @@
     "SMTP_HOST": "smtp.gmail.com",
     "SMTP_PORT": "465",
     "SMTP_FROM": "app.4str0@gmail.com",
-    "REDIS_QUEUE_KEY": "processamento:email:funcionario",
-    "ACCESS_TOKEN_PREFIX": "processamento:email:funcionario:access_key:",
+    "REDIS_QUEUE_KEY": "processamento:email:colaborador",
+    "ACCESS_TOKEN_PREFIX": "processamento:email:colaborador:chave_acesso:",
     "ACCESS_TOKEN_TTL_SECONDS": "604800",
     "WORKSPACE_EMAIL_QUEUE_KEY": "processamento:email:workspace",
-    "WORKSPACE_ACCESS_TOKEN_PREFIX": "processamento:email:workspace:access_key:"
+    "WORKSPACE_ACCESS_TOKEN_PREFIX": "processamento:email:workspace:chave_acesso:"
   },
   "hyperdrive": [
     {
